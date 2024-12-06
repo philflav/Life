@@ -1,6 +1,6 @@
 # Development Process
 
-This document outlines the step-by-step process we followed to build the Game of Life simulator.
+This document outlines the step-by-step process we followed to build the Game of Life simulator. Made using Windsurf and Calude 3.5 Sonnet, 6 December 2024
 
 ## Phase 1: Initial Setup
 1. Created basic project structure

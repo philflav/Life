@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Life</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .game-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .game-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .graph-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 500px;
+            height: 600px;
+        }
+        .patterns-panel {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 250px;
+            max-height: 800px;
+            overflow: visible !important;  /* Allow tooltips to show outside */
+            position: relative;
+        }
+        .patterns-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+        .pattern-btn {
+            width: 100%;
+            text-align: left;
+            padding: 10px;
+            margin: 0;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            position: relative;
+            transition: background-color 0.3s;
+        }
+        .pattern-btn:hover {
+            background-color: #45a049;
+        }
+        .pattern-info {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+        }
+        canvas#gameCanvas {
+            border: 1px solid #333;
+            background-color: white;
+        }
+        .controls {
+            margin: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .stats {
+            font-size: 16px;
+            margin: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .tooltip {
+            position: absolute;
+            right: calc(100% + 10px);  /* Position to the left */
+            top: 50%;
+            transform: translateY(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 200px;
+            z-index: 9999;
+            display: none;
+        }
+        .pattern-btn:hover .tooltip {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Conway's Game of Life</h1>
+    <div class="game-container">
+        <div class="patterns-panel">
+            <h3>Pattern Library</h3>
+            <div class="pattern-info">Click a pattern, then click on the grid to place it</div>
+            <div class="patterns-list">
+                <button class="pattern-btn" data-pattern="glider">
+                    Glider
+                    <span class="tooltip">A simple glider that moves diagonally</span>
+                </button>
+                <button class="pattern-btn" data-pattern="blinker">
+                    Blinker
+                    <span class="tooltip">Oscillates between horizontal and vertical</span>
+                </button>
+                <button class="pattern-btn" data-pattern="beacon">
+                    Beacon
+                    <span class="tooltip">Two oscillating blocks</span>
+                </button>
+                <button class="pattern-btn" data-pattern="pulsar">
+                    Pulsar
+                    <span class="tooltip">A complex oscillator with period 3</span>
+                </button>
+                <button class="pattern-btn" data-pattern="pentadecathlon">
+                    Pentadecathlon
+                    <span class="tooltip">An oscillator with period 15</span>
+                </button>
+                <button class="pattern-btn" data-pattern="gliderGun">
+                    Gosper Glider Gun
+                    <span class="tooltip">Continuously creates gliders</span>
+                </button>
+                <button class="pattern-btn" data-pattern="LWSS">
+                    Lightweight Spaceship
+                    <span class="tooltip">Moves horizontally across the grid</span>
+                </button>
+                <button class="pattern-btn" data-pattern="loaf">
+                    Loaf
+                    <span class="tooltip">A stable pattern that doesn't change</span>
+                </button>
+                <button class="pattern-btn" data-pattern="toad">
+                    Toad
+                    <span class="tooltip">A simple period 2 oscillator</span>
+                </button>
+                <button class="pattern-btn" data-pattern="diehard">
+                    Diehard
+                    <span class="tooltip">Dies after 130 generations</span>
+                </button>
+                <button class="pattern-btn" data-pattern="acorn">
+                    Acorn
+                    <span class="tooltip">A methuselah that stabilizes after 5206 generations</span>
+                </button>
+                <button class="pattern-btn" data-pattern="block">
+                    Block
+                    <span class="tooltip">The simplest still life pattern</span>
+                </button>
+                <button class="pattern-btn" data-pattern="beehive">
+                    Beehive
+                    <span class="tooltip">A common stable formation</span>
+                </button>
+                <button class="pattern-btn" data-pattern="rpentomino">
+                    R-pentomino
+                    <span class="tooltip">A pattern that evolves for many generations</span>
+                </button>
+                <button class="pattern-btn" data-pattern="HWSS">
+                    Heavy Weight Spaceship
+                    <span class="tooltip">A larger spaceship that moves horizontally</span>
+                </button>
+                <button class="pattern-btn" data-pattern="clock">
+                    Clock
+                    <span class="tooltip">A period 2 oscillator that looks like a clock</span>
+                </button>
+                <button class="pattern-btn" data-pattern="octagon">
+                    Octagon
+                    <span class="tooltip">A symmetric pattern that oscillates between two states</span>
+                </button>
+                <button class="pattern-btn" data-pattern="pentaDecathlon">
+                    Penta-decathlon
+                    <span class="tooltip">An oscillator with a period of 15</span>
+                </button>
+                <button class="pattern-btn" data-pattern="galaxy">
+                    Galaxy
+                    <span class="tooltip">An elegant period 4 oscillator</span>
+                </button>
+                <button class="pattern-btn" data-pattern="queenBee">
+                    Queen Bee
+                    <span class="tooltip">A pattern that creates a sequence of blocks</span>
+                </button>
+            </div>
+        </div>
+        <div class="game-panel">
+            <div class="stats">
+                Generation: <span id="generationCount" class="stat-value">0</span> | 
+                Living Cells: <span id="livingCount" class="stat-value">0</span>
+            </div>
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            <div class="controls">
+                <button id="startBtn">Start</button>
+                <button id="stopBtn">Stop</button>
+                <button id="clearBtn">Clear</button>
+                <button id="randomBtn">Random</button>
+            </div>
+        </div>
+        <div class="graph-panel">
+            <canvas id="populationChart"></canvas>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
